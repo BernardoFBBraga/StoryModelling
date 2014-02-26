@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="stories" nsURI="http://stories.bernardofbbraga.com.br" nsPrefix="stories">
+  <eClassifiers xsi:type="ecore:EClass" name="Database">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="users" upperBound="-1"
+        eType="#//User" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="User">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="posts" upperBound="-1"
+        eType="#//User_generated_content" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="likes" upperBound="-1"
+        eType="#//User_generated_content"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="username" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString" iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="password" unique="false"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Story" eSuperTypes="#//User_generated_content">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
+        eType="#//Story_element" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="User_generated_content" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="creation_time" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Comment" eSuperTypes="#//User_generated_content">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="about" lowerBound="1" eType="#//User_generated_content"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="text" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral=""/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Individual" abstract="true" eSuperTypes="#//Story_element"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Node" eSuperTypes="#//Individual">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="performed" upperBound="-1"
+        eType="#//Action" containment="true" eOpposite="#//Action/performed_by"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance_of" upperBound="-1"
+        eType="#//Node_classifier" eOpposite="#//Node_classifier/instances"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Link" eSuperTypes="#//Individual">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
+        eType="#//Node"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" lowerBound="1"
+        eType="#//Node"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance_of" upperBound="-1"
+        eType="#//Link_classifier" eOpposite="#//Link_classifier/instances"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Situation" eSuperTypes="#//Story_element">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="present" upperBound="-1"
+        eType="#//Individual"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="enabled" upperBound="-1"
+        eType="#//Event" eOpposite="#//Event/happened_in"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="brought_about_by" upperBound="-1"
+        eType="#//Event" eOpposite="#//Event/brings_about"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance_of" upperBound="-1"
+        eType="#//Situation_classifier" eOpposite="#//Situation_classifier/instances"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Event" abstract="true" eSuperTypes="#//Story_element">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="directly_causes" upperBound="-1"
+        eType="#//Event"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="causes" upperBound="-1"
+        eType="#//Event"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance_of" upperBound="-1"
+        eType="#//Event_classifier" eOpposite="#//Event_classifier/instances"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="brings_about" upperBound="-1"
+        eType="#//Situation" eOpposite="#//Situation/brought_about_by"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="happened_in" lowerBound="1"
+        eType="#//Situation" eOpposite="#//Situation/enabled"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Story_element" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="label" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Happening" eSuperTypes="#//Event"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Action" eSuperTypes="#//Event">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="motivated_by" upperBound="-1"
+        eType="#//Event"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="performed_by" lowerBound="1"
+        eType="#//Node" eOpposite="#//Node/performed"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Model" eSuperTypes="#//User_generated_content">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="classes" upperBound="-1"
+        eType="#//SEClassifier" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SEClassifier" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Situation_classifier" eSuperTypes="#//SEClassifier">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instances" upperBound="-1"
+        eType="#//Situation" eOpposite="#//Situation/instance_of"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Event_classifier" eSuperTypes="#//SEClassifier">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instances" upperBound="-1"
+        eType="#//Event" eOpposite="#//Event/instance_of"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Node_classifier" eSuperTypes="#//SEClassifier">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instances" upperBound="-1"
+        eType="#//Node" eOpposite="#//Node/instance_of"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Link_classifier" eSuperTypes="#//SEClassifier">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instances" upperBound="-1"
+        eType="#//Link" eOpposite="#//Link/instance_of"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
+        eType="#//SEClassifier"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" lowerBound="1"
+        eType="#//SEClassifier"/>
+  </eClassifiers>
+</ecore:EPackage>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stories:Database xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:stories="http://stories.bernardofbbraga.com.br">
+	<users username="bernardofbbraga" password="pass123">
+		<posts xsi:type="stories:Story" creation_time="0007-08-07T00:00:00.000-0300">
+			<elements xsi:type="stories:Node" label="John"
+				instance_of="//@users.0/@posts.1/@classes.0" />
+		</posts>
+		<posts xsi:type="stories:Model" creation_time="0008-08-06T00:00:00.000-0300"
+			name="genealogia">
+			<classes xsi:type="stories:Node_classifier" name="Person" />
+		</posts>
+	</users>
+</stories:Database>

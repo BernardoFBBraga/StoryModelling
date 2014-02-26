@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stories:Database
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:stories="http://stories.bernardofbbraga.com.br"
+    xsi:schemaLocation="http://stories.bernardofbbraga.com.br ../../inputModel/stories.ecore">
+  <users username="bernardofbbraga"
+      password="pass124">
+    <posts xsi:type="stories:Story"
+        creation_time="0006-07-07T00:00:00.000-0300"
+        id="StarWars">
+      <elements
+          xsi:type="stories:Node"
+          label="Luke"
+          instance_of="Person"/>
+      <elements
+          xsi:type="stories:Situation"
+          label="Luke dreams"
+          present="Luke Lukes_Uncle_Farm at"
+          enabled="plays_Leias_msg"/>
+      <elements
+          xsi:type="stories:Situation"
+          label="Luke_wants_to_save_Leia"
+          present="Luke R2D2"
+          brought_about_by="plays_Leias_msg"/>
+      <elements
+          xsi:type="stories:Node"
+          label="R2D2">
+        <performed
+            label="plays_Leias_msg"
+            brings_about="Luke_wants_to_save_Leia"
+            happened_in="Luke dreams"/>
+      </elements>
+      <elements
+          xsi:type="stories:Node"
+          label="Lukes_Uncle_Farm"
+          instance_of="Local"/>
+      <elements
+          xsi:type="stories:Link"
+          label="at"
+          source="Luke"
+          target="Lukes_Uncle_Farm"
+          instance_of="located_at"/>
+    </posts>
+    <posts xsi:type="stories:Model"
+        creation_time="0006-07-07T00:00:00.000-0300"
+        id="genealogia">
+      <classes
+          xsi:type="stories:Node_classifier"
+          name="Person"
+          instances="Luke Mary John"/>
+    </posts>
+    <posts xsi:type="stories:Model"
+        creation_time="0026-08-07T00:00:00.000-0300"
+        id="Traveling">
+      <classes
+          xsi:type="stories:Node_classifier"
+          name="Local"
+          instances="Lukes_Uncle_Farm"/>
+      <classes
+          xsi:type="stories:Event_classifier"
+          name="travel"/>
+      <classes
+          xsi:type="stories:Link_classifier"
+          name="origin"
+          source="travel"
+          target="Local"/>
+      <classes
+          xsi:type="stories:Link_classifier"
+          name="destination"
+          source="travel"
+          target="Local"/>
+      <classes
+          xsi:type="stories:Link_classifier"
+          name="traveler"
+          source="travel"
+          target="Person"/>
+      <classes
+          xsi:type="stories:Link_classifier"
+          name="located_at"
+          instances="at"
+          source="Person"
+          target="Local"/>
+    </posts>
+  </users>
+  <users username="jpalmeida"
+      password="enschede">
+    <posts xsi:type="stories:Story"
+        creation_time="0007-07-07T00:00:00.000-0300"
+        id="marysstory">
+      <elements
+          xsi:type="stories:Node"
+          label="Mary"
+          instance_of="Person"/>
+      <elements
+          xsi:type="stories:Situation"
+          label="sit1"
+          present="Mary John married_to"/>
+      <elements
+          xsi:type="stories:Node"
+          label="John"
+          instance_of="Person"/>
+      <elements
+          xsi:type="stories:Link"
+          label="married_to"
+          source="John"
+          target="Mary"/>
+    </posts>
+  </users>
+</stories:Database>

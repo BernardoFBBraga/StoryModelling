@@ -33,6 +33,6 @@ local data = require ("data")
 
 
 display.setDefault( "background", 1 )
---storyboard.gotoScene( "screen1" )
+storyboard.gotoScene( "screen1" )
 
 

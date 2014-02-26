@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+</style>
+<body>
+
+<table>
+  <tr>
+    <td>
+      <div id="btPrevDiv">
+        <input name="btPrevSit" 
+               type="button" 
+               value="← Previous" 
+               onclick="previousSituation()" 
+        />
+      </div>
+    </td>
+    
+    <td>
+      
+      <div id="btNextDiv">
+        <input name="btNextSit" 
+               type="button" 
+               value="Next →" 
+               onclick="nextSituation()" 
+        />
+      </div>
+    </td>
+  </tr>
+</table>
+<script src="d3.v3.min.js"></script>
+<script>
+
+var w = window,
+    d = document,
+    e = d.documentElement,
+    g = d.getElementsByTagName('body')[0],
+    width = -20 + (w.innerWidth || e.clientWidth || g.clientWidth),
+    height = -20 + ( w.innerHeight|| e.clientHeight|| g.clientHeight);
+
+var color = d3.scale.category20();
+
+var force = d3.layout.force()
+    .gravity(1)
+    .charge(-3000)
+    .linkDistance(50)
+    .size([width, height])
+   // .linkStrength(function(x) {
+   //     return x.weight * 10
+   //   });;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+//d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements?depth=3", function(error, graph) {  
+  d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/Luke%20dreams/present?depth=2", function(error, graph) {  
+//  d3.json("http://localhost:8080/emfrest/app/Database/My1/users/jpalmeida/posts/Story/marysstory/elements?depth=3", function(error, graph) {  
+  
+//parsing data to fit D3JS source and target as indexes of the node array
+  var edges = [];
+
+  graph.Link.forEach(function(e) { 
+      // Get the source and target nodes
+      var sourceNode = graph.Node.filter(function(n) { return n.label === e.source; })[0],
+          targetNode = graph.Node.filter(function(n) { return n.label === e.target; })[0];
+           
+      // Add the edge to the array
+      edges.push({source: graph.Node.indexOf(sourceNode), target: graph.Node.indexOf(targetNode), label: e.label, instance_of: e.instance_of, weigth:"1"});
+  });
+
+//coloring according to classes
+  graph.Node.forEach(function(e) { 
+    console.log(e)
+     if(e.instance_of.length>0 && e.instance_of[0].name == "Person"){
+        e.group = 1;
+
+     }
+     else
+     {
+        e.group = 3;
+     }
+  });
+
+  //turning on force
+  force
+      .nodes(graph.Node)
+      .links(edges)
+      .start();  
+ 
+ var link = svg.selectAll(".link")
+      .data(edges)
+    .enter().append("line")
+      .attr("class", "link")
+      .style("stroke-width", function(d) { return 2; });
+
+
+
+  var node = svg.selectAll(".node")
+      .data(graph.Node)
+    .enter().append("circle")
+      .attr("class", "node")
+      .attr("r", 10)
+      .style("fill", function(d) { return color(d.group); })
+      .call(force.drag);
+
+  node.append("title")
+      .text(function(d) { return d.label; });
+
+  
+var force2 = d3.layout.force()
+    .gravity(1)
+    .charge(-3000)
+    .linkDistance(50)
+    .size([width, height])
+
+
+
+//Now the labels!!
+  var text = svg.selectAll(".text")
+      .data(graph.Node)
+    .enter().append("text")
+      .text(function(d) {
+        return d.label
+      })
+      .attr("class", "text")
+      .style("fill", "#555")
+      .style("font-family", "Arial")
+      .style("font-size", 12)
+      .style("text-anchor", "middle")
+      .call(force.drag);
+ // force.nodes(svg.text);
+ force2
+      .nodes(text)
+      .start();  
+
+
+  force.on("tick", function() {
+   link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+    force2.resume();
+    
+  });
+
+  force2.on("tick", function() {
+    text.attr("x", function(d) { return d.x; })
+        .attr("y", function(d) { return d.y +20; });
+    
+  });
+  
+});
+
+</script>
+    
+
