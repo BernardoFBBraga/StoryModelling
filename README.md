@@ -4,6 +4,7 @@ StoryModelling
 An instagram for telling stories using models.
 
 StoryModelling is a ludic environment for people involved with conceptual modelling. Usually modelling is conducted in very formal environments, either in enterprise, research or learning. 
+
 StoryModelling is a ludic environment where people may post "stories" (m0-level models) which may be classified by existing conceptual models (m1-level models). Other users may "like", comment on or fork the stories. 
 This environment should help people engage in meaningful conversation about modeling, share difficulties, get help and be creative.
 
@@ -16,10 +17,15 @@ The d3.js presentation is embedded in a Corona SDK app.
 
 
 ROADMAP:
+
 -Add visualization of events
+
 -Create the Corona SDK social network interface
+
 -Create the social network server side
+
 -Replace the emf-rest framework with a custom-made server side since they don't support PUT, POST or DELETE.
+
 -Make the story editor
 -Add the fork functionality
 
