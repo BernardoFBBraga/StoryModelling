@@ -14,3 +14,12 @@ The data is served using emf-rest, a prototype for serving the model instances a
 The data is then presented using d3.js
 The d3.js presentation is embedded in a Corona SDK app.
 
+
+ROADMAP:
+-Add visualization of events
+-Create the Corona SDK social network interface
+-Create the social network server side
+-Replace the emf-rest framework with a custom-made server side since they don't support PUT, POST or DELETE.
+-Make the story editor
+-Add the fork functionality
+
