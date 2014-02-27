@@ -51,6 +51,7 @@ var w = window,
 
 var color = d3.scale.category20();
 
+//force for nodes and links
 var force = d3.layout.force()
     .gravity(1)
     .charge(-3000)
@@ -60,17 +61,27 @@ var force = d3.layout.force()
    //     return x.weight * 10
    //   });;
 
+//force for labels
+var force2 = d3.layout.force()
+    .gravity(1)
+    .charge(-3000)
+    .linkDistance(50)
+    .size([width, height])
+
 var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-//d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements?depth=3", function(error, graph) {  
-  d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/Luke%20dreams/present?depth=2", function(error, graph) {  
-//  d3.json("http://localhost:8080/emfrest/app/Database/My1/users/jpalmeida/posts/Story/marysstory/elements?depth=3", function(error, graph) {  
-  
-//parsing data to fit D3JS source and target as indexes of the node array
-  var edges = [];
+var situations;
+d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/",function(error, req){
+  situations=req;
+  situations.cursor = 0;
+});
 
+
+function getIndexBasedEdges(graph){
+  var edges = [];
+  //parsing data to fit D3JS source and target as indexes of the node array
   graph.Link.forEach(function(e) { 
       // Get the source and target nodes
       var sourceNode = graph.Node.filter(function(n) { return n.label === e.source; })[0],
@@ -79,11 +90,13 @@ var svg = d3.select("body").append("svg")
       // Add the edge to the array
       edges.push({source: graph.Node.indexOf(sourceNode), target: graph.Node.indexOf(targetNode), label: e.label, instance_of: e.instance_of, weigth:"1"});
   });
+  return edges
+}
 
-//coloring according to classes
-  graph.Node.forEach(function(e) { 
-    console.log(e)
-     if(e.instance_of.length>0 && e.instance_of[0].name == "Person"){
+function setNodesColor(nodes){
+  //coloring according to classes
+  nodes.forEach(function(e) { 
+    if(e.instance_of !=null && e.instance_of.length>0 && e.instance_of[0].name == "Person"){
         e.group = 1;
 
      }
@@ -92,79 +105,201 @@ var svg = d3.select("body").append("svg")
         e.group = 3;
      }
   });
+}
 
-  //turning on force
-  force
-      .nodes(graph.Node)
-      .links(edges)
-      .start();  
- 
- var link = svg.selectAll(".link")
-      .data(edges)
+function generateSVGLinks(edges){
+  var link = svg.selectAll(".link")
+      .data(edges);
+      link
     .enter().append("line")
-      .attr("class", "link")
-      .style("stroke-width", function(d) { return 2; });
+      .attr("class", "link");
 
+      link.style("stroke-width", function(d) { return 2; });
 
+      link.exit().remove();
+  return link;
+}
 
+function generateSVGNodes(nodes){
   var node = svg.selectAll(".node")
-      .data(graph.Node)
-    .enter().append("circle")
+      .data(nodes);
+    node.enter().append("circle")
       .attr("class", "node")
       .attr("r", 10)
       .style("fill", function(d) { return color(d.group); })
-      .call(force.drag);
-
-  node.append("title")
+      .call(force.drag)
       .text(function(d) { return d.label; });
-
-  
-var force2 = d3.layout.force()
-    .gravity(1)
-    .charge(-3000)
-    .linkDistance(50)
-    .size([width, height])
-
-
-
-//Now the labels!!
+      node.exit().remove();
+  return node;
+}
+function generateNodeLabels(nodes){
+  //Now the labels!!
   var text = svg.selectAll(".text")
-      .data(graph.Node)
+      .data(nodes);
+      text
     .enter().append("text")
-      .text(function(d) {
-        return d.label
-      })
-      .attr("class", "text")
       .style("fill", "#555")
       .style("font-family", "Arial")
       .style("font-size", 12)
       .style("text-anchor", "middle")
       .call(force.drag);
- // force.nodes(svg.text);
- force2
+
+      text.text(function(d) {
+        return d.label
+      });
+      text.attr("class", "text");
+      text.exit().remove();
+  return text;
+}
+
+var data_link;
+var data_edges
+var data_node;
+/*
+var situation_map={
+  nodes:{},
+  merge_nodes:function(new_nodes){
+    //add new nodes
+    for (var key in new_nodes) {
+      if (new_nodes.hasOwnProperty(key)) {
+        if(this.nodes[new_nodes[key].label] == null){
+          this.nodes[new_nodes[key].label] = new_nodes[key];
+          console.log("added "+new_nodes[key].label);
+        }
+      }
+    }
+    //remove other nodes
+    for (var key in this.nodes) {
+      if (this.nodes.hasOwnProperty(key)) {
+        var should_remove = true;
+        for(i=0;i<new_nodes.length;i++){
+          if(new_nodes[i].label == key){
+            should_remove = false;
+            break;
+          }
+        }
+        if(should_remove){
+          delete this.nodes[key];
+          console.log("removed "+key);
+        }
+      }
+    }
+  }
+};*/
+
+function  generateGraph(url){
+  d3.json(url, function(error,graph){
+  //  situation_map.merge_nodes(graph.Node);
+  //  console.log(situation_map);
+  //  console.log(graph.Node);
+    data_edges = getIndexBasedEdges(graph);
+    console.log(data_edges)
+    data_node = graph.Node;
+    data_link = graph.Link;
+    setNodesColor(data_node);
+    var link = generateSVGLinks(data_edges);
+    var node = generateSVGNodes(data_node);
+    var text = generateNodeLabels(data_node);
+
+
+    force
+      .nodes(data_node) // check http://mbostock.github.io/d3/tutorial/bar-2.html on how to get a different ID for the nodes (not index but label)
+      .links(data_edges)
+      .start();
+    force2
       .nodes(text)
       .start();  
+    force.on("tick", function() {
+      link.attr("x1", function(d) { return d.source.x; })
+          .attr("y1", function(d) { return d.source.y; })
+          .attr("x2", function(d) { return d.target.x; })
+          .attr("y2", function(d) { return d.target.y; });
 
+      node.attr("cx", function(d) { return d.x; })
+          .attr("cy", function(d) { return d.y; });
+      force2.resume(); 
+    });
 
-  force.on("tick", function() {
-   link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
-    force2.resume();
-    
-  });
-
-  force2.on("tick", function() {
-    text.attr("x", function(d) { return d.x; })
-        .attr("y", function(d) { return d.y +20; });
+    force2.on("tick", function() {
+      text.attr("x", function(d) { return d.x; })
+          .attr("y", function(d) { return d.y +20; }); 
+    });
     
   });
   
-});
+}
+
+
+
+
+generateGraph("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/Luke%20dreams/present?depth=2");
+
+function merge_nodes(base,new_nodes){
+  //add new nodes
+  for(i=0;i<new_nodes.length;i++){
+    var should_add = true;
+    for(j=0;j<base.length;j++){
+      if(base[j].label == new_nodes[i].label){
+        //node is already in base
+        should_add = false;
+        break;
+      }
+    }
+    if(should_add){
+      base.push(new_nodes[i]);
+    }
+  }
+  //remove nodes
+  for(i=0;i<base.length;i++){
+    var should_remove = true;
+    for(j=0;j<new_nodes.length;j++){
+      if(base[i].label == new_nodes[j].label){
+        //node is already in base
+        should_remove = false;
+        break;
+      }
+    }
+    if(should_remove){
+      base.splice(i,1);
+    }
+  }
+  return base;
+} 
+
+function updateGraphData(error,graph) {
+  var edges = getIndexBasedEdges(graph);
+ // situation_map.merge_nodes(graph.Node);
+ // console.log(situation_map); 
+  console.log(edges)
+  setNodesColor(graph.Node, function(d){return d.label});
+  var link = generateSVGLinks(edges);
+  merge_nodes(data_node,graph.Node);
+  var node = generateSVGNodes(data_node);
+  var text = generateNodeLabels(data_node);
+  force.nodes(data_node).links(edges).start();
+  force2.nodes(text).start();
+}
+
+//button functions
+function nextSituation(){
+  if(situations.length > situations.cursor){
+    situations.cursor++;
+    d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/"+situations[situations.cursor].label+"/present/?depth=2", function(error,graph) {
+      console.log(graph)
+      updateGraphData(error, graph);
+    });
+  }
+
+}
+function previousSituation(){
+  if(0 < situations.cursor){
+    situations.cursor--;
+    d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/"+situations[situations.cursor].label+"/present/?depth=2",function(error,graph) {
+      updateGraphData(error,graph);
+    });
+  }
+
+}
 
 </script>
     
