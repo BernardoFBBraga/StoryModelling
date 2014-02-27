@@ -15,7 +15,7 @@
 </style>
 <body>
 
-<table>
+<table align="center">
   <tr>
     <td>
       <div id="btPrevDiv">
@@ -26,7 +26,11 @@
         />
       </div>
     </td>
-    
+    <td>
+      <p id="situation_name">
+        abc
+      </p>
+    </td>
     <td>
       
       <div id="btNextDiv">
@@ -53,9 +57,9 @@ var color = d3.scale.category20();
 
 //force for nodes and links
 var force = d3.layout.force()
-    .gravity(1)
-    .charge(-3000)
-    .linkDistance(50)
+    .gravity(0.05)
+    .charge(-300)
+    .linkDistance(100)
     .size([width, height])
    // .linkStrength(function(x) {
    //     return x.weight * 10
@@ -63,34 +67,78 @@ var force = d3.layout.force()
 
 //force for labels
 var force2 = d3.layout.force()
-    .gravity(1)
-    .charge(-3000)
-    .linkDistance(50)
+    .gravity(0.05)
+    .charge(-300)
+    .linkDistance(100)
     .size([width, height])
 
 var svg = d3.select("body").append("svg")
     .attr("width", width)
-    .attr("height", height);
-
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(32,64)");
+var Story;
 var situations;
-d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/",function(error, req){
+d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/?depth=3",function(error, req){
   situations=req;
   situations.cursor = 0;
+  d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/?depth=2",function(error, elements){
+    for(i=0;i<elements.Node.length;i++){
+      //console.log("doing.."+elements.Node[i].label);
+      for(j=0;j<situations.length;j++){
+        for(k=0;k<situations[j].present.Node.length;k++){
+          //console.log(elements.Node[i].label+" "+situations[j].present.Node[k].label)
+          if(elements.Node[i].label==situations[j].present.Node[k].label){
+            //console.log("added.."+situations[j].present.Node[k].label+" to situation"+situations[j].label);
+            delete situations[j].present.Node[k];
+            situations[j].present.Node[k] = elements.Node[i];
+          }  
+        }
+        
+      }
+    }
+    getIndexBasedEdges(elements.Node, elements.Link); 
+
+    for(i=0;i<elements.Link.length;i++){
+      //console.log("doing.."+elements.Link[i].label);
+      for(j=0;j<situations.length;j++){
+        situations[j].present.Link = getIndexBasedEdges(situations[j].present.Node,situations[j].present.Link); 
+        for(k=0;k<situations[j].present.Link.length;k++){
+          //console.log(elements.Link[i].label+" "+situations[j].present.Link[k].label)
+          if(elements.Link[i].source==situations[j].present.Link[k].source &&
+            elements.Link[i].target==situations[j].present.Link[k].target){
+            //console.log("added.."+situations[j].present.Link[k].label+" to situation"+situations[j].label);
+            delete situations[j].present.Link[k];
+            situations[j].present.Link[k] = elements.Link[i];
+          }  
+        }
+        
+      }
+    }
+    
+    //console.log(situations)
+    Story = elements;
+    Story.Situation = situations;
+
+    setNodesColor(Story.Node);
+    generateGraph(situations[0].present);
+
+  });
 });
 
 
-function getIndexBasedEdges(graph){
-  var edges = [];
+function getIndexBasedEdges(nodes,links){
+  //var edges = [];
   //parsing data to fit D3JS source and target as indexes of the node array
-  graph.Link.forEach(function(e) { 
+  links.forEach(function(e) { 
       // Get the source and target nodes
-      var sourceNode = graph.Node.filter(function(n) { return n.label === e.source; })[0],
-          targetNode = graph.Node.filter(function(n) { return n.label === e.target; })[0];
-           
+      e.source = nodes.indexOf(nodes.filter(function(n) { return n.label === e.source; })[0]);
+      e.target = nodes.indexOf(nodes.filter(function(n) { return n.label === e.target; })[0]);
+      e.weigth = 1;    
       // Add the edge to the array
-      edges.push({source: graph.Node.indexOf(sourceNode), target: graph.Node.indexOf(targetNode), label: e.label, instance_of: e.instance_of, weigth:"1"});
+     // edges.push({source: graph.Node.indexOf(sourceNode), target: graph.Node.indexOf(targetNode), label: e.label, instance_of: e.instance_of, weigth:"1"});
   });
-  return edges
+  return links
 }
 
 function setNodesColor(nodes){
@@ -112,11 +160,10 @@ function generateSVGLinks(edges){
       .data(edges);
       link
     .enter().append("line")
-      .attr("class", "link");
+      .attr("class", "link")
+      .style("stroke-width", function(d) { return 2; });
 
-      link.style("stroke-width", function(d) { return 2; });
-
-      link.exit().remove();
+      link.exit().remove(); 
   return link;
 }
 
@@ -152,87 +199,79 @@ function generateNodeLabels(nodes){
   return text;
 }
 
-var data_link;
-var data_edges
-var data_node;
-/*
-var situation_map={
-  nodes:{},
-  merge_nodes:function(new_nodes){
-    //add new nodes
-    for (var key in new_nodes) {
-      if (new_nodes.hasOwnProperty(key)) {
-        if(this.nodes[new_nodes[key].label] == null){
-          this.nodes[new_nodes[key].label] = new_nodes[key];
-          console.log("added "+new_nodes[key].label);
-        }
-      }
-    }
-    //remove other nodes
-    for (var key in this.nodes) {
-      if (this.nodes.hasOwnProperty(key)) {
-        var should_remove = true;
-        for(i=0;i<new_nodes.length;i++){
-          if(new_nodes[i].label == key){
-            should_remove = false;
-            break;
-          }
-        }
-        if(should_remove){
-          delete this.nodes[key];
-          console.log("removed "+key);
-        }
-      }
-    }
-  }
-};*/
 
-function  generateGraph(url){
-  d3.json(url, function(error,graph){
-  //  situation_map.merge_nodes(graph.Node);
-  //  console.log(situation_map);
-  //  console.log(graph.Node);
-    data_edges = getIndexBasedEdges(graph);
-    console.log(data_edges)
-    data_node = graph.Node;
-    data_link = graph.Link;
-    setNodesColor(data_node);
-    var link = generateSVGLinks(data_edges);
-    var node = generateSVGNodes(data_node);
-    var text = generateNodeLabels(data_node);
+function  generateGraph(graph){
+  data_node = graph.Node;
+  data_link = graph.Link;
+  
+  var link = generateSVGLinks(data_link);
+  var node = generateSVGNodes(data_node);
+  var text = generateNodeLabels(data_node);
 
+  force
+    .nodes(data_node) // check http://mbostock.github.io/d3/tutorial/bar-2.html on how to get a different ID for the nodes (not index but label)
+    .links(data_link)
+    .start();
+  force2
+    .nodes(text)
+    .start();  
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
 
-    force
-      .nodes(data_node) // check http://mbostock.github.io/d3/tutorial/bar-2.html on how to get a different ID for the nodes (not index but label)
-      .links(data_edges)
-      .start();
-    force2
-      .nodes(text)
-      .start();  
-    force.on("tick", function() {
-      link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
-
-      node.attr("cx", function(d) { return d.x; })
-          .attr("cy", function(d) { return d.y; });
-      force2.resume(); 
-    });
-
-    force2.on("tick", function() {
-      text.attr("x", function(d) { return d.x; })
-          .attr("y", function(d) { return d.y +20; }); 
-    });
-    
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+    force2.resume(); 
   });
+
+  force2.on("tick", function() {
+    text.attr("x", function(d) { return d.x; })
+        .attr("y", function(d) { return d.y +20; }); 
+  });
+  document.getElementById("situation_name").innerHTML = Story.Situation[situations.cursor].label; 
   
 }
 
 
 
+function merge_links(base,new_links){
 
-generateGraph("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/Luke%20dreams/present?depth=2");
+  for(i=0;i<new_links.length;i++){
+    var should_add;
+    should_add = true;
+    for(j=0;j<base.length;j++){
+      if(base[j].source==new_links[i].source &&
+         base[j].target==new_links[i].target){
+        //link is already in base
+        should_add = false;
+        break;
+      }
+    }
+    if(should_add){
+      base.push(new_links[i]);
+    }
+  }
+  //remove nodes
+  for(i=0;i<base.length;i++){
+    var should_remove = true;
+    
+    for(j=0;j<new_links.length;j++){
+      if(base[i].source==new_links[j].source &&
+         base[i].target==new_links[j].target){
+        //link is already in base
+        should_remove = false;
+        break;
+      }
+    }
+    if(should_remove){
+      base.splice(i,1);
+    }
+  }
+  
+  return base;
+}
 
 function merge_nodes(base,new_nodes){
   //add new nodes
@@ -267,25 +306,56 @@ function merge_nodes(base,new_nodes){
 } 
 
 function updateGraphData(error,graph) {
-  var edges = getIndexBasedEdges(graph);
- // situation_map.merge_nodes(graph.Node);
- // console.log(situation_map); 
-  console.log(edges)
+  
+  //setting properties of new nodes
   setNodesColor(graph.Node, function(d){return d.label});
-  var link = generateSVGLinks(edges);
+  //merging the data with the old one so to keep the same object references
   merge_nodes(data_node,graph.Node);
+
+  //updating nodes and node labels
   var node = generateSVGNodes(data_node);
-  var text = generateNodeLabels(data_node);
-  force.nodes(data_node).links(edges).start();
-  force2.nodes(text).start();
+  var node_labels = generateNodeLabels(data_node);
+
+  var edges = getIndexBasedEdges(data_node,graph.Link);
+  merge_links(data_link, edges);
+
+  var link = generateSVGLinks(data_link);
+  //restarting force with new data
+  force
+    .nodes(data_node)
+    .links(data_link)
+    .start();
+  force2
+    .nodes(node_labels)
+    .start();
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+      force2.resume(); 
+  });
+
+  force2.on("tick", function() {
+    node_labels.attr("x", function(d) { return d.x; })
+              .attr("y", function(d) { return d.y +20; }); 
+  } );
+
+  // DATA JOIN
+  // Join new data with old elements, if any.
+  document.getElementById("situation_name").innerHTML = Story.Situation[situations.cursor].label; 
 }
 
 //button functions
 function nextSituation(){
-  if(situations.length > situations.cursor){
+  if(situations.length-1 > situations.cursor){
     situations.cursor++;
     d3.json("http://localhost:8080/emfrest/app/Database/My1/users/bernardofbbraga/posts/Story/StarWars/elements/Situation/"+situations[situations.cursor].label+"/present/?depth=2", function(error,graph) {
-      console.log(graph)
+      
       updateGraphData(error, graph);
     });
   }
