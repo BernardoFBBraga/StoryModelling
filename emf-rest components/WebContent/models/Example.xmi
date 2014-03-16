@@ -13,35 +13,73 @@
       <elements
           xsi:type="stories:Node"
           label="Luke"
-          instance_of="Person"/>
-      <elements
-          xsi:type="stories:Situation"
-          label="Luke dreams"
-          present="Luke Lukes_Uncle_Farm at"
-          enabled="plays_Leias_msg"/>
-      <elements
-          xsi:type="stories:Situation"
-          label="Luke_wants_to_save_Leia"
-          present="Luke R2D2"
-          brought_about_by="plays_Leias_msg"/>
-      <elements
-          xsi:type="stories:Node"
-          label="R2D2">
+          instance_of="Person">
         <performed
-            label="plays_Leias_msg"
-            brings_about="Luke_wants_to_save_Leia"
-            happened_in="Luke dreams"/>
+            label="Refuses_Obi_Wan's_call"
+            happened_in="Reluctance_to_change"/>
+        <performed
+            label="Luke_travels_to_find_Obi_Wan_Kenobi"
+            instance_of="travel"
+            happened_in="Increased_awareness"
+            motivated_by="plays_Leia's_msg_(cropped)_to_Luke"/>
       </elements>
-      <elements
-          xsi:type="stories:Node"
-          label="Lukes_Uncle_Farm"
-          instance_of="Local"/>
       <elements
           xsi:type="stories:Link"
           label="at"
           source="Luke"
           target="Lukes_Uncle_Farm"
           instance_of="located_at"/>
+      <elements
+          xsi:type="stories:Node"
+          label="Lukes_Uncle_Farm"
+          instance_of="Local"/>
+      <elements
+          xsi:type="stories:Node"
+          label="R2D2">
+        <performed
+            label="plays_Leia's_msg_(cropped)_to_Luke"
+            brings_about="Increased_awareness"/>
+        <performed
+            label="plays_Leia's_msg_(cropped)_to_Obi_Wan"
+            brings_about="Reluctance_to_change"/>
+        <performed
+            label="plays_full_msg_to_Luke"
+            brings_about="Overcoming_reluctance"/>
+      </elements>
+      <elements
+          xsi:type="stories:Node"
+          label="Obi_Wan_Kenobi"
+          instance_of="Person">
+        <performed
+            label="Asks_Luke_to_follow_him"
+            brings_about="Reluctance_to_change"
+            motivated_by="plays_Leia's_msg_(cropped)_to_Luke"/>
+      </elements>
+      <elements
+          xsi:type="stories:Node"
+          label="Obi_Wan_Kenobi's_home"
+          instance_of="Local"/>
+      <elements
+          xsi:type="stories:Situation"
+          label="Limited_awareness_of_the_problem"
+          present="Luke Lukes_Uncle_Farm at"/>
+      <elements
+          xsi:type="stories:Situation"
+          label="Increased_awareness"
+          present="Luke R2D2"
+          enabled="Luke_travels_to_find_Obi_Wan_Kenobi"
+          brought_about_by="plays_Leia's_msg_(cropped)_to_Luke"/>
+      <elements
+          xsi:type="stories:Situation"
+          label="Reluctance_to_change"
+          present="Obi_Wan_Kenobi Luke Lukes_Uncle_Farm R2D2"
+          enabled="Refuses_Obi_Wan's_call"
+          brought_about_by="plays_Leia's_msg_(cropped)_to_Obi_Wan Asks_Luke_to_follow_him"/>
+      <elements
+          xsi:type="stories:Situation"
+          label="Overcoming_reluctance"
+          present="R2D2 Luke"
+          brought_about_by="plays_full_msg_to_Luke"/>
     </posts>
     <posts xsi:type="stories:Model"
         creation_time="0006-07-07T00:00:00.000-0300"
@@ -49,7 +87,7 @@
       <classes
           xsi:type="stories:Node_classifier"
           name="Person"
-          instances="Luke Mary John"/>
+          instances="Luke Mary Obi_Wan_Kenobi John"/>
     </posts>
     <posts xsi:type="stories:Model"
         creation_time="0026-08-07T00:00:00.000-0300"
@@ -57,10 +95,11 @@
       <classes
           xsi:type="stories:Node_classifier"
           name="Local"
-          instances="Lukes_Uncle_Farm"/>
+          instances="Lukes_Uncle_Farm Obi_Wan_Kenobi's_home"/>
       <classes
           xsi:type="stories:Event_classifier"
-          name="travel"/>
+          name="travel"
+          instances="Luke_travels_to_find_Obi_Wan_Kenobi"/>
       <classes
           xsi:type="stories:Link_classifier"
           name="origin"
@@ -96,7 +135,7 @@
       <elements
           xsi:type="stories:Situation"
           label="sit1"
-          present="Mary John married_to"/>
+          present="Mary married_to"/>
       <elements
           xsi:type="stories:Node"
           label="John"
@@ -104,7 +143,6 @@
       <elements
           xsi:type="stories:Link"
           label="married_to"
-          source="John"
           target="Mary"/>
     </posts>
   </users>
